@@ -1,0 +1,64 @@
+{
+    "name": "toggle-readonly",
+    "displayName": "toggle-readonly",
+    "description": "toggle-readonly",
+    "version": "0.0.1",
+    "publisher": "huangyj",
+    "icon": "imgs/readonly_icon.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/huangyaojun/toggle-readonly.git"
+    },
+    "engines": {
+        "vscode": "^1.91.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "file-readonly-toggler.toggleReadonly",
+                "title": "Toggle Read-only"
+            }
+        ],
+        "menus": {
+            "explorer/context": [
+                {
+                    "command": "file-readonly-toggler.toggleReadonly",
+                    "group": "readonly_workspace",
+                    "when": "explorerResourceIsFolder || resourceLangId"
+                }
+            ],
+            "editor/context": [
+                {
+                    "command": "file-readonly-toggler.toggleReadonly",
+                    "group": "readonly_modification",
+                    "when": "resourceLangId"
+                }
+            ]
+        },
+        "extensionIcon": {
+            "light": "imgs/readonly_icon.png",
+            "dark": "imgs/readonly_icon.png"
+        }
+    },
+    "scripts": {
+        "lint": "eslint .",
+        "pretest": "npm run lint",
+        "test": "vscode-test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^10.0.7",
+        "@types/node": "20.x",
+        "@types/vscode": "^1.91.0",
+        "@vscode/test-cli": "^0.0.9",
+        "@vscode/test-electron": "^2.4.0",
+        "eslint": "^8.57.0",
+        "typescript": "^5.4.5"
+    }
+}
