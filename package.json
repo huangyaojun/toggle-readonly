@@ -2,8 +2,8 @@
     "name": "toggle-readonly",
     "displayName": "toggle-readonly",
     "description": "toggle-readonly",
-    "version": "0.0.1",
-    "publisher": "huangyj",
+    "version": "0.0.2",
+    "publisher": "huangyaojun",
     "icon": "imgs/readonly_icon.png",
     "repository": {
         "type": "git",
@@ -16,9 +16,9 @@
         "Other"
     ],
     "activationEvents": [
-        "onStartupFinished"
+        "onCommand:file-readonly-toggler.toggleReadonly"
     ],
-    "main": "./extension.js",
+    "main": "./out/extension.js",
     "contributes": {
         "commands": [
             {
@@ -48,17 +48,22 @@
         }
     },
     "scripts": {
-        "lint": "eslint .",
-        "pretest": "npm run lint",
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile && npm run lint",
+        "lint": "eslint src --ext ts",
         "test": "vscode-test"
     },
     "devDependencies": {
+        "@types/vscode": "^1.91.0",
         "@types/mocha": "^10.0.7",
         "@types/node": "20.x",
-        "@types/vscode": "^1.91.0",
-        "@vscode/test-cli": "^0.0.9",
-        "@vscode/test-electron": "^2.4.0",
+        "@typescript-eslint/eslint-plugin": "^7.14.1",
+        "@typescript-eslint/parser": "^7.11.0",
         "eslint": "^8.57.0",
-        "typescript": "^5.4.5"
+        "typescript": "^5.4.5",
+        "@vscode/test-cli": "^0.0.9",
+        "@vscode/test-electron": "^2.4.0"
     }
 }

@@ -1,16 +1,16 @@
-const vscode = require('vscode');
-const path = require('path');
-const fs = require('fs');
+import * as vscode from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 
-function activate(context) {
+export function activate(context: vscode.ExtensionContext): void {
     console.log(
         'Congratulations, your extension "file-readonly-toggler" is now active!'
     );
 
     let disposable = vscode.commands.registerCommand(
         'file-readonly-toggler.toggleReadonly',
-        (uri, uris) => {
-            let selectedUris = [];
+        (uri?: vscode.Uri, uris?: vscode.Uri[]) => {
+            let selectedUris: vscode.Uri[] = [];
 
             if (uri) {
                 // Called from explorer context menu
@@ -32,15 +32,18 @@ function activate(context) {
 
             // Get the current configuration
             const config = vscode.workspace.getConfiguration('files');
-            let readonlyInclude = config.get('readonlyInclude') || {};
+            let readonlyInclude =
+                config.get<{ [key: string]: boolean }>('readonlyInclude') || {};
 
             // Convert readonlyInclude keys to normalized paths
-            const normalizedReadonlyInclude = Object.keys(
-                readonlyInclude
-            ).reduce((acc, key) => {
-                acc[path.normalize(key)] = readonlyInclude[key];
-                return acc;
-            }, {});
+            const normalizedReadonlyInclude: { [key: string]: boolean } =
+                Object.keys(readonlyInclude).reduce(
+                    (acc: { [key: string]: boolean }, key) => {
+                        acc[path.normalize(key)] = readonlyInclude[key];
+                        return acc;
+                    },
+                    {}
+                );
 
             let addedCount = 0;
             let removedCount = 0;
@@ -54,6 +57,7 @@ function activate(context) {
                     );
                     return;
                 }
+
                 // Check if it's a directory
                 const isDirectory = fs.statSync(normalizedPath).isDirectory();
                 if (isDirectory) {
@@ -64,7 +68,9 @@ function activate(context) {
                 const isIncludedInParent = Object.keys(
                     normalizedReadonlyInclude
                 ).some((includedPath) => {
-                    if (normalizedPath == includedPath) return false;
+                    if (normalizedPath === includedPath) {
+                        return false;
+                    }
                     const isFolder = includedPath.endsWith('**');
                     const isInclude = normalizedPath.startsWith(
                         includedPath.slice(0, -3)
@@ -98,7 +104,7 @@ function activate(context) {
                 .then(
                     () => {
                         // Show summary message
-                        let message = [];
+                        let message: string[] = [];
                         if (addedCount > 0) {
                             message.push(
                                 `Added ${addedCount} item(s) to readonly files.`
@@ -114,6 +120,7 @@ function activate(context) {
                                 `Ignored ${ignoredCount} item(s) due to parent folder settings.`
                             );
                         }
+
                         vscode.window.showInformationMessage(message.join(' '));
                     },
                     (error) => {
@@ -128,9 +135,4 @@ function activate(context) {
     context.subscriptions.push(disposable);
 }
 
-function deactivate() {}
-
-module.exports = {
-    activate,
-    deactivate,
-};
+export function deactivate(): void {}
