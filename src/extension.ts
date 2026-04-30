@@ -3,12 +3,10 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 export function activate(context: vscode.ExtensionContext): void {
-    console.log(
-        'Congratulations, your extension "file-readonly-toggler" is now active!'
-    );
+    console.log('Congratulations, your extension "file-utils" is now active!');
 
-    let disposable = vscode.commands.registerCommand(
-        'file-readonly-toggler.toggleReadonly',
+    let readOnlyDisposable = vscode.commands.registerCommand(
+        'file-utils.toggleReadonly',
         (uri?: vscode.Uri, uris?: vscode.Uri[]) => {
             let selectedUris: vscode.Uri[] = [];
 
@@ -35,15 +33,17 @@ export function activate(context: vscode.ExtensionContext): void {
             let readonlyInclude =
                 config.get<{ [key: string]: boolean }>('readonlyInclude') || {};
 
+            const normalizedReadonlyInclude = { ...readonlyInclude };
             // Convert readonlyInclude keys to normalized paths
-            const normalizedReadonlyInclude: { [key: string]: boolean } =
-                Object.keys(readonlyInclude).reduce(
-                    (acc: { [key: string]: boolean }, key) => {
-                        acc[path.normalize(key)] = readonlyInclude[key];
-                        return acc;
-                    },
-                    {}
-                );
+            // const normalizedReadonlyInclude: { [key: string]: boolean } =
+            //     Object.keys(readonlyInclude).reduce(
+            //         (acc: { [key: string]: boolean }, key) => {
+            //             // acc[path.normalize(key)] = readonlyInclude[key];
+            //             acc[key] = readonlyInclude[key];
+            //             return acc;
+            //         },
+            //         {}
+            //     );
 
             let addedCount = 0;
             let removedCount = 0;
@@ -51,6 +51,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
             selectedUris.forEach((uri) => {
                 let normalizedPath = path.normalize(uri.fsPath);
+                // let normalizedPath = path.normalize(uri.path);
+                // let normalizedPath = uri.path;
+
                 if (normalizedPath.includes('.vscode')) {
                     vscode.window.showWarningMessage(
                         `Due to security restrictions, changing the read-only status of this directory is not supported.`
@@ -63,7 +66,7 @@ export function activate(context: vscode.ExtensionContext): void {
                 if (isDirectory) {
                     normalizedPath = path.join(normalizedPath, '**');
                 }
-
+                normalizedPath = normalizedPath.replace(/\\/g, '/');
                 // Check if the path is already included in a parent folder
                 const isIncludedInParent = Object.keys(
                     normalizedReadonlyInclude
@@ -129,6 +132,41 @@ export function activate(context: vscode.ExtensionContext): void {
                         );
                     }
                 );
+        }
+    );
+
+    context.subscriptions.push(readOnlyDisposable);
+
+    let disposable = vscode.commands.registerCommand(
+        'file-utils.gitDiscardChanges',
+        async () => {
+            const editor = vscode.window.activeTextEditor;
+            if (!editor) {
+                vscode.window.showErrorMessage('No active text editor');
+                return;
+            }
+
+            // const choice = await vscode.window.showInformationMessage(
+            //     'Do you want to discard changes in this file with git?',
+            //     'Yes',
+            //     'No'
+            // );
+
+            // // 检查用户的选择
+            // if (choice === 'No') {
+            //     return;
+            // }
+
+            try {
+                await vscode.commands.executeCommand('git.clean');
+                // vscode.window.showInformationMessage(
+                //     'Changes discarded successfully'
+                // );
+            } catch (error) {
+                vscode.window.showErrorMessage(
+                    `Failed to discard changes: ${error}`
+                );
+            }
         }
     );
 
